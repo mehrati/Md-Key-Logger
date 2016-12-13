@@ -7,7 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 
-void log_time_now(char *timestring) {
+void get_time_now(char *timestring) {
 
     time_t rawtime;
     time(&rawtime);
