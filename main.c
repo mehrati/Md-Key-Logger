@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
     char *log_file;
     FILE *log;
 
-    log_file = "/home/alien/Desktop/key.log";
+    log_file = "/var/log/Md-Key-Logger.log";
     log = stdout;
 
     static struct option long_options[] = {
@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
             case 'h':
                 printf(" Md-Key-Logger V 1.0\n"
                         " Usage: [OPTION]...\n"
-                        "  -l, --log-file <file>  write log to FILE (default=/var/log/MD-key-logger.log)\n"
+                        "  -l, --log-file <file>  write log to FILE (default=/var/log/Md-Key-Logger.log)\n"
                         "  -d, --daemon  run as daemon\n"
                         "  -h, --help    show this message\n"
                         "  \n");
