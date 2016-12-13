@@ -139,10 +139,12 @@ int main(int argc, char **argv) {
             }
         }
         end = clock();
-        if ((start - end) >= 3600) {
+        if ((((end - start)) / CLOCKS_PER_SEC) >= 3600) { // log time every 1 hour
             log_time_now(timestring);
             fprintf(log, "\n%s\n", timestring);
             fflush(log);
+            start = 0;
+            end = 0;
             bzero(timestring, 80);
         }
     }
