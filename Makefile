@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-c -Wall 
+CFLAGS=-c -Wall
 LDFLAGS= -lm
 
 all: Md_Key_Logger

