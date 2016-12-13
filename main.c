@@ -23,10 +23,10 @@ int main(int argc, char **argv) {
     char choose;
     int option_index;
     int get_stream_key;
+    int readable = 1;
     bool daemon_mod = false;
     bool caps_pressed = false;
     bool shift_pressed = false;
-    int readable = 1;
     char stream_path[128];
     char time_string[80];
     char *log_file;
