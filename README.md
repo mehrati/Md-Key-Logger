@@ -12,5 +12,7 @@ Run :
 
 sudo ./Md-Key-Logger -d
 
+default directory = /var/log/Md-Key-Logger.log
+
 
 

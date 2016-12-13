@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
             case 'h':
                 printf(" Md-Key-Logger V 1.0\n"
                         " Usage: [OPTION]...\n"
-                        "  -l, --log-file <file>  write log to FILE (default=/var/log/Md-Key-Logger.log)\n"
+                        "  -l, --log-file <file>  write log to file (default=/var/log/Md-Key-Logger.log)\n"
                         "  -d, --daemon  run as daemon\n"
                         "  -h, --help    show this message\n"
                         "  \n");
