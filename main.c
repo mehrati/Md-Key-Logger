@@ -91,8 +91,9 @@ int main(int argc, char **argv) {
 
     if (daemon_mod) {
         if (change_task_to_background() == 0) {
-            fprintf(stderr, "Process ID = %d \n", getpid);
-            printf("Process ID = %d \n", getpid);
+            
+            fprintf(stderr, "Process ID = %d \n", (int)getpid);
+            printf("Process ID = %d \n", (int)getpid);
         } else {
 
             perror("Error");
